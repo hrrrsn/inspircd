@@ -1,0 +1,27 @@
+From d24629b4576667e2175bf49ee199f03f56abb09c Mon Sep 17 00:00:00 2001
+From: Harrison Gulliver <harrison.gulliver@spark.co.nz>
+Date: Sat, 12 Jul 2025 11:42:42 +1200
+Subject: [PATCH] fix(dns): Add support for RFC2317 rDNS delegation
+
+---
+ src/helperfuncs.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/helperfuncs.cpp b/src/helperfuncs.cpp
+index 756aeb11b..4aeafb77c 100644
+--- a/src/helperfuncs.cpp
++++ b/src/helperfuncs.cpp
+@@ -344,6 +344,10 @@ bool InspIRCd::IsHost(const std::string_view& host, bool allowsimple)
+ 		if ((chr >= '0' && chr <= '9') || (chr >= 'A' && chr <= 'Z') || (chr >= 'a' && chr <= 'z'))
+ 			continue;
+ 
++		// RFC2317: Allow forward slashes in hostnames for reverse DNS delegation
++		if (chr == '/')
++			continue;
++
+ 		return false;
+ 	}
+ 
+-- 
+2.50.0
+

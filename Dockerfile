@@ -1,6 +1,6 @@
 FROM alpine:3.22 AS builder
 
-LABEL maintainer="InspIRCd Team <noreply@inspircd.org>"
+# LABEL maintainer="InspIRCd Team <noreply@inspircd.org>"
 
 ARG VERSION=insp4
 ARG CONFIGUREARGS=
@@ -22,6 +22,10 @@ RUN git clone --branch $VERSION https://github.com/inspircd/inspircd.git inspirc
 WORKDIR /inspircd-src
 RUN git checkout $(git describe --abbrev=0 --tags $VERSION)
 
+RUN apk add --no-cache patch
+COPY rfc2317.patch /tmp/
+RUN patch -p1 < /tmp/rfc2317.patch
+
 ## Add modules
 RUN { [ $(ls /src/modules/ | wc -l) -gt 0 ] && cp -r /src/modules/* /inspircd-src/src/modules/ || echo "No modules overwritten/added by repository"; }
 RUN echo $EXTRASMODULES | xargs --no-run-if-empty ./modulemanager install
@@ -37,7 +41,7 @@ RUN rm -rf /inspircd/conf/*
 FROM alpine:3.22
 
 ARG RUN_DEPENDENCIES=
-
+ 
 RUN apk add --no-cache libgcc libstdc++ gnutls gnutls-utils $RUN_DEPENDENCIES && \
     addgroup -g 10000 -S inspircd && \
     adduser -u 10000 -h /inspircd/ -D -S -G inspircd inspircd
